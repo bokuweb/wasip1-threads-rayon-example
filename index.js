@@ -60,6 +60,24 @@ if (isMainThread) {
         },
         env: { memory },
       });
+      // https://github.com/toyobayashi/emnapi/blob/5ab92c706c7cd4a0a30759e58f26eedfb0ded591/packages/wasi-threads/src/wasi-threads.ts#L288-L335
+      const { createInstanceProxy } = require("./proxy.js");
+      instance = createInstanceProxy(instance, memory)
+      wasi.start(instance)
+      try {
+        const symbols = Object.getOwnPropertySymbols(wasi)
+        const selectDescription = (description) => (s) => {
+          if (s.description) {
+            return s.description === description
+          }
+          return s.toString() === `Symbol(${description})`
+        }
+        if (Array.isArray(description)) {
+          return description.map(d => symbols.filter(selectDescription(d))[0])
+        }
+        const kStarted = symbols.filter(selectDescription(description))[0]
+        wasi[kStarted] = false
+      } catch (_) {}
       instance.exports.wasi_thread_start(tid, start_arg);
     } catch (e) {
       // NOP
