@@ -1,12 +1,19 @@
-use std::thread;
+use rayon::{prelude::*, ThreadPoolBuilder};
+
+fn sum_of_squares(input: &[i32]) -> i32 {
+    let pool = ThreadPoolBuilder::new().num_threads(4).build().unwrap();
+    pool.install(|| {
+        input
+            .par_iter()
+            .map(|&i| {
+                dbg!(rayon::current_thread_index());
+                i * i
+            })
+            .sum()
+    })
+}
 
 fn main() {
-    let mut x = 10;
-    thread::scope(|s| {
-        s.spawn(|| {
-            dbg!("why. if you enable this line, this program will be hang with nodejs");
-            x += 20;
-        });
-    });
+    let x = sum_of_squares(&[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     println!("{x}");
 }
