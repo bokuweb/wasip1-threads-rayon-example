@@ -6,6 +6,7 @@ fn sum_of_squares(input: &[i32]) -> i32 {
         input
             .par_iter()
             .map(|&i| {
+                // panic!("panic!!!!");
                 dbg!(rayon::current_thread_index());
                 i * i
             })
